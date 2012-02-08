@@ -1,0 +1,28 @@
+﻿<html>
+
+<head>
+	<title>js-wiki</title>
+	<script type="text/javascript" src="scripts/jquery-1.7.1.min.js"></script>
+	<script type="text/javascript" src="scripts/underscore-min.js"></script>
+	<script type="text/javascript" src="scripts/backbone-min.js"></script>
+	<script type="text/javascript" src="scripts/markdown.js"></script>
+	<script type="text/javascript" src="scripts/js-wiki.js"></script>
+</head>
+
+<body>
+
+<div id="page"></div>
+
+<script type="text/javascript">
+$(function() {
+	var da = new jswiki.fakeda();
+	var parser = new jswiki.parser();
+	var ps = new jswiki.pageserver(da, parser);
+	var browser = new jswiki.browser(ps);
+	browser.navigate("README.md");
+});
+</script>
+
+</body>
+
+</html>
