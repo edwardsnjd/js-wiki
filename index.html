@@ -18,7 +18,9 @@ $(function() {
 	var da = new jswiki.fakeda();
 	var parser = new jswiki.parser();
 	var ps = new jswiki.pageserver(da, parser);
-	var browser = new jswiki.browser(ps);
+    var router = new jswiki.router();
+    Backbone.history.start();
+	var browser = new jswiki.browser(ps, router);
 	browser.navigate("README.md");
 });
 </script>

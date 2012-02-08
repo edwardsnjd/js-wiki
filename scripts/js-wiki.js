@@ -7,7 +7,8 @@ jswiki.page = function(path, html) {
 
 jswiki.fakeda = function() {
 	this.retrieveMarkdown = function(options) {
-		options.success({path: options.path, md: "Hello, world! [Readme](#foo) ![Some image](celebrate.gif)"});
+		var fakePath = options.path + ".md";
+		options.success({path: options.path, md: "Hello, world! [google](http://google.com/) [" + fakePath + "](" + fakePath + ") ![Some image](celebrate.gif)"});
 	};
 };
 
@@ -58,19 +59,39 @@ jswiki.pageserver = function(da, parser) {
 	};
 };
 
-jswiki.browser = function(server) {
+jswiki.router = Backbone.Router.extend({
+	routes: {
+		"*path": "changePath"
+	}
+});
+
+jswiki.browser = function(server, router) {	
 	this.navigate = function(path) {
+		// Update url
+		router.navigate(path);
+		
+		// Initiate page fetch
 		server.getPage({
 			path: path,
-			response: function(page) {
-				$("#page").html(page.html).select("a").click(onClick);
-			}
+			response: _.bind(renderPage, this)
 		});
 	};
 	
-	var onClick = function(event) {
-		// event.preventDefault();
-		// alert(event);
-		// return false;
+	var renderPage = function(page) {
+		$("#page").html(page.html)
+			.select("a").click(_.bind(onClick, this));
 	};
+	
+	var onClick = function(event) {
+		var anchor = event.target;
+		var url = $(anchor).attr("href");
+		// Ignore absolute urls, capture all others
+		if (!/^http(s)?:\/\//.test(url)) {
+			event.preventDefault();
+			this.navigate(url);
+			return false;
+		}
+	};
+
+	router.on("route:changePath", _.bind(this.navigate, this));	
 };
