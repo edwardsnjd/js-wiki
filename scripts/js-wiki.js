@@ -66,6 +66,8 @@ jswiki.router = Backbone.Router.extend({
 });
 
 jswiki.browser = function(server, router) {	
+	var that = this;
+	
 	this.navigate = function(path) {
 		// Update url
 		router.navigate(path);
@@ -73,14 +75,27 @@ jswiki.browser = function(server, router) {
 		// Initiate page fetch
 		server.getPage({
 			path: path,
-			response: _.bind(renderPage, this)
+			response: function(page) {
+				that.trigger("pageReady", page);
+			}
 		});
 	};
 	
-	var renderPage = function(page) {
-		$("#page").html(page.html)
-			.select("a").click(_.bind(onClick, this));
-	};
+	router.on("route:changePath", _.bind(this.navigate, this));	
+};
+_.extend(jswiki.browser.prototype, Backbone.Events);
+
+jswiki.pathPanel = function(el, browser) {
+	browser.on("pageReady", function(page) {
+		$(el).html(page.path);
+	});
+};
+
+jswiki.pagePanel = function(el, browser) {
+	browser.on("pageReady", function(page) {
+		$(el).html(page.html)
+			.select("a").click(onClick);
+	});
 	
 	var onClick = function(event) {
 		var anchor = event.target;
@@ -88,10 +103,8 @@ jswiki.browser = function(server, router) {
 		// Ignore absolute urls, capture all others
 		if (!/^http(s)?:\/\//.test(url)) {
 			event.preventDefault();
-			this.navigate(url);
+			browser.navigate(url);
 			return false;
 		}
 	};
-
-	router.on("route:changePath", _.bind(this.navigate, this));	
-};
+}

@@ -11,6 +11,8 @@
 
 <body>
 
+<h1 id="path"></h1>
+
 <div id="page"></div>
 
 <script type="text/javascript">
@@ -21,7 +23,15 @@ $(function() {
     var router = new jswiki.router();
     Backbone.history.start();
 	var browser = new jswiki.browser(ps, router);
-	browser.navigate("README.md");
+	var pathPanel = new jswiki.pathPanel("#path", browser);
+	var pagePanel = new jswiki.pagePanel("#page", browser);
+	
+	// Load initial page
+	var initialPath = "README.md";
+	if (window.location.hash) {
+		initialPath = window.location.hash.substring(1);
+	}
+	browser.navigate(initialPath);
 });
 </script>
 
