@@ -96,4 +96,11 @@ jswiki.pagePanel = function(el, browser) {
 		browser.navigate(url);
 		return false;
 	};
-}
+};
+
+jswiki.pathPanel = function(el, browser) {
+	browser.on("pageReady", function(page) {
+		// Render link to orig file
+		$(el).html(_.template("You are seeing a js-wiki view of <a href='<%= path %>'><%= path %></a>.", page));
+	});
+};

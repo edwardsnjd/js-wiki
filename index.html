@@ -13,7 +13,7 @@
 		//	var ps = new jswiki.pageserver(new jswiki.fakeda);
 		var ps = new jswiki.pageserver(new jswiki.da);
 		var browser = new jswiki.browser(ps);
-		var pagePanel = new jswiki.pagePanel("body", browser);
+		var pagePanel = new jswiki.pagePanel("#content", browser);
 			
 		// Start backbone watching urls
 	    Backbone.history.start();
@@ -28,6 +28,8 @@
 	</script>
 </head>
 
-<body></body>
+<body>
+	<div id="content"></div>
+</body>
 
 </html>
