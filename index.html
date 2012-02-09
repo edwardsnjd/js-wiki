@@ -7,34 +7,27 @@
 	<script type="text/javascript" src="scripts/backbone-min.js"></script>
 	<script type="text/javascript" src="scripts/markdown.js"></script>
 	<script type="text/javascript" src="scripts/js-wiki.js"></script>
+
+	<script type="text/javascript">
+	$(function() {
+		//	var ps = new jswiki.pageserver(new jswiki.fakeda);
+		var ps = new jswiki.pageserver(new jswiki.da);
+		var browser = new jswiki.browser(ps);
+		var pagePanel = new jswiki.pagePanel("body", browser);
+			
+		// Start backbone watching urls
+	    Backbone.history.start();
+		
+		// Load initial page
+		var initialPath = "index.md";
+		if (window.location.hash) {
+			initialPath = window.location.hash.substring(1);
+		}
+		browser.navigate(initialPath);
+	});
+	</script>
 </head>
 
-<body>
-
-<h1 id="path"></h1>
-
-<div id="page"></div>
-
-<script type="text/javascript">
-$(function() {
-	var da = new jswiki.fakeda();
-	var parser = new jswiki.parser();
-	var ps = new jswiki.pageserver(da, parser);
-    var router = new jswiki.router();
-    Backbone.history.start();
-	var browser = new jswiki.browser(ps, router);
-	var pathPanel = new jswiki.pathPanel("#path", browser);
-	var pagePanel = new jswiki.pagePanel("#page", browser);
-	
-	// Load initial page
-	var initialPath = "README.md";
-	if (window.location.hash) {
-		initialPath = window.location.hash.substring(1);
-	}
-	browser.navigate(initialPath);
-});
-</script>
-
-</body>
+<body></body>
 
 </html>

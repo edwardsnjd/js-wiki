@@ -35,23 +35,17 @@ jswiki.da = function() {
 	};
 };
 
-jswiki.parser = function() {
-	this.parse = function(md) {
-		return markdown.toHTML(md);
-	};
-};
-
-jswiki.pageserver = function(da, parser) {
+jswiki.pageserver = function(da) {
 	this.getPage = function(options) {
 		da.retrieveMarkdown({
 			path: options.path,
 			success: function(result) {
-				var html = parser.parse(result.md);
+				var html = markdown.toHTML(result.md);
 				var page = new jswiki.page(result.path, html);
 				options.response(page);
 			},
 			error: function(result) {
-				var html = parser.parse(result.status + "\n\n" + result.error);
+				var html = markdown.toHTML(result.status + "\n\n" + result.error);
 				var page = new jswiki.page(result.path, html);
 				options.response(page);
 			}
@@ -59,20 +53,13 @@ jswiki.pageserver = function(da, parser) {
 	};
 };
 
-jswiki.router = Backbone.Router.extend({
-	routes: {
-		"*path": "changePath"
-	}
-});
-
-jswiki.browser = function(server, router) {	
-	var that = this;
-	
+jswiki.browser = function(server) {
 	this.navigate = function(path) {
 		// Update url
 		router.navigate(path);
 		
 		// Initiate page fetch
+		var that = this;
 		server.getPage({
 			path: path,
 			response: function(page) {
@@ -80,31 +67,33 @@ jswiki.browser = function(server, router) {
 			}
 		});
 	};
-	
-	router.on("route:changePath", _.bind(this.navigate, this));	
+
+	var router = new Backbone.Router();
+	router.route("*path", "changePath", _.bind(this.navigate, this));
 };
 _.extend(jswiki.browser.prototype, Backbone.Events);
 
-jswiki.pathPanel = function(el, browser) {
-	browser.on("pageReady", function(page) {
-		$(el).html(page.path);
-	});
-};
-
 jswiki.pagePanel = function(el, browser) {
 	browser.on("pageReady", function(page) {
+		// Render page and intercept links
 		$(el).html(page.html)
-			.select("a").click(onClick);
+			.find("a").click(onClick);
 	});
 	
 	var onClick = function(event) {
 		var anchor = event.target;
 		var url = $(anchor).attr("href");
+		var extensionMatch = /\.([a-z0-9]+)$/.exec(url);
+		var extension = extensionMatch ? extensionMatch[1] : "";
+
 		// Ignore absolute urls, capture all others
-		if (!/^http(s)?:\/\//.test(url)) {
-			event.preventDefault();
-			browser.navigate(url);
-			return false;
-		}
+		if (/^http(s)?:\/\//.test(url)) return true;
+
+		// Ignore unmapped extensions
+		if (extension != "md") return true;
+
+		event.preventDefault();
+		browser.navigate(url);
+		return false;
 	};
 }
