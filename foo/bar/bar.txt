@@ -1,0 +1,5 @@
+[../foo.txt](../foo.txt)
+
+[../../README.txt](../../README.txt)
+
+![../../celebrate.gif](../../celebrate.gif)
