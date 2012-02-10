@@ -1,27 +1,15 @@
 var jswiki = {};
 
-jswiki.page = function(path, html) {
-	this.path = path;
-	this.html = html;
-};
-
-jswiki.fakeda = function() {
-	this.retrieveMarkdown = function(options) {
-		var fakePath = options.path + ".md";
-		options.success({path: options.path, md: "Hello, world! [google](http://google.com/) [" + fakePath + "](" + fakePath + ") ![Some image](celebrate.gif)"});
-	};
-};
-
 jswiki.da = function() {
 	this.retrieveMarkdown = function(options) {
 		$.ajax({
 			url: options.path,
-			type: "GET",
 			dataType: "text",
 			success: function(data, status, xhr) {
 				options.success({
 					path: options.path,
-					md: data
+					status: status,
+					text: data
 				});
 			},
 			error: function(xhr, status, error) {
@@ -40,14 +28,23 @@ jswiki.pageserver = function(da) {
 		da.retrieveMarkdown({
 			path: options.path,
 			success: function(result) {
-				var html = markdown.toHTML(result.md);
-				var page = new jswiki.page(result.path, html);
-				options.response(page);
+				var html = markdown.toHTML(result.text);
+				// NB. Fix paths to come from root of site
+				html = jswiki.pathHelper.rootRelativePaths(options.path || "", html);
+				options.response({
+					path: result.path,
+					status: result.status,
+					html: html
+				});
 			},
 			error: function(result) {
-				var html = markdown.toHTML(result.status + "\n\n" + result.error);
-				var page = new jswiki.page(result.path, html);
-				options.response(page);
+				var md = _.template("# Error\n\nStatus: {{status}}\n\nDetails: {{error}}", result);
+				var html = markdown.toHTML(md);
+				options.response({
+					path: result.path,
+					status: result.status,
+					html: html
+				});
 			}
 		});
 	};
@@ -55,23 +52,53 @@ jswiki.pageserver = function(da) {
 
 jswiki.browser = function(server) {
 	this.navigate = function(path) {
-		// Update url
+		// Normalise path to ensure only one url identifies a page
+		path = jswiki.pathHelper.normalise(path);
+		
+		// Update state
 		router.navigate(path);
 		
 		// Initiate page fetch
-		var that = this;
+		var me = this;
 		server.getPage({
 			path: path,
-			response: function(page) {
-				that.trigger("pageReady", page);
+			response: function(response) {
+				me.trigger("pageReady", response);
 			}
 		});
-	};
-
+	} ;
+	
 	var router = new Backbone.Router();
 	router.route("*path", "changePath", _.bind(this.navigate, this));
 };
 _.extend(jswiki.browser.prototype, Backbone.Events);
+
+jswiki.pathHelper = {
+	rootRelativePaths: function(contextPath, html) {
+		var contextDirPath = this.getDirectory(contextPath);
+		// If no context to add then return markup as is
+		if (!contextDirPath) return html;
+		// Otherwise prepend context dir before all relative paths
+		else return html.replace(/(src|href)=\"(?![a-z]+:)(?!\/)([^"]*)\"/gi, "$1=\"" + contextDirPath + "/$2\"");
+	},
+	getDirectory: function(path) {
+		path = path || "";
+		return path.replace(/\/?[^\/]+$/i, "")
+	},
+	normalise: function(path) {
+		// Remove leading parent moves
+		var leadingParentRegex = /^\.\.\//;
+		while (leadingParentRegex.test(path)) {
+			path = path.replace(leadingParentRegex, "");
+		}
+		// Remove pointless pairs
+		var pointlessPairRegex = /[a-z0-9]+\/\.\.\//i;
+		while (pointlessPairRegex.test(path)) {
+			path = path.replace(pointlessPairRegex, "");
+		}
+		return path;
+	}
+};
 
 jswiki.pagePanel = function(el, browser) {
 	browser.on("pageReady", function(page) {
@@ -83,15 +110,17 @@ jswiki.pagePanel = function(el, browser) {
 	var onClick = function(event) {
 		var anchor = event.target;
 		var url = $(anchor).attr("href");
+
+		// Ignore "protocol:..." urls
+		if (/^[a-z]+:/.test(url)) return true;
+		// Ignore "//domain/path/..." urls
+		if (/^\/\//.test(url)) return true;
+		// Ignore unmapped file extensions
 		var extensionMatch = /\.([a-z0-9]+)$/.exec(url);
 		var extension = extensionMatch ? extensionMatch[1] : "";
-
-		// Ignore absolute urls, capture all others
-		if (/^http(s)?:\/\//.test(url)) return true;
-
-		// Ignore unmapped extensions
-		if (extension != "md") return true;
-
+		if (extension != "md" && extension != "txt") return true;
+		
+		// OK, capture the click and pass to browser
 		event.preventDefault();
 		browser.navigate(url);
 		return false;

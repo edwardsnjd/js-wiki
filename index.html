@@ -7,29 +7,30 @@
 	<script type="text/javascript" src="scripts/backbone-min.js"></script>
 	<script type="text/javascript" src="scripts/markdown.js"></script>
 	<script type="text/javascript" src="scripts/js-wiki.js"></script>
+	<link rel="stylesheet" type="text/css" href="styles/eric-meyer-reset.css" />
+	<link rel="stylesheet" type="text/css" href="styles/wiki.css" />
 
 	<script type="text/javascript">
 	$(function() {
-		//	var ps = new jswiki.pageserver(new jswiki.fakeda);
 		var ps = new jswiki.pageserver(new jswiki.da);
 		var browser = new jswiki.browser(ps);
 		var pagePanel = new jswiki.pagePanel("#content", browser);
-			
-		// Start backbone watching urls
-	    Backbone.history.start();
+		var pathPanel = new jswiki.pathPanel("#path", browser);
 		
-		// Load initial page
-		var initialPath = "index.md";
-		if (window.location.hash) {
-			initialPath = window.location.hash.substring(1);
+		// Load default page if not already specified on url
+		if (!window.location.hash) {
+			window.location = "#README.txt";
 		}
-		browser.navigate(initialPath);
+		
+		// Start backbone watching urls and triggering navigation events
+	    Backbone.history.start();
 	});
 	</script>
 </head>
 
 <body>
 	<div id="content"></div>
+	<div id="path"></div>
 </body>
 
 </html>
