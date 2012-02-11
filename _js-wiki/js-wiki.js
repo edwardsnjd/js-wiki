@@ -65,7 +65,7 @@ jswiki.browser = function(da, parserMap) {
 				me.handleResponse({
 					path: result.path,
 					status: result.status,
-					html: _.template("<h1>Error</h1><p>Status: {{status}}</p><p>Details: {{error}}</p>", result)
+					html: _.template("<h1>Error</h1><p>Status: <%=status%></p><p>Details: <%=error%></p>", result)
 				});
 			}
 		});
