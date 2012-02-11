@@ -12,8 +12,8 @@
 
 	<script type="text/javascript">
 	$(function() {
-		var ps = new jswiki.pageserver(new jswiki.da);
-		var browser = new jswiki.browser(ps);
+		var da = new jswiki.da();
+		var browser = new jswiki.browser(da);
 		var pagePanel = new jswiki.pagePanel("#content", browser);
 		var pathPanel = new jswiki.pathPanel("#path", browser);
 		

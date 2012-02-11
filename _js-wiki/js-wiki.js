@@ -23,53 +23,75 @@ jswiki.da = function() {
 	};
 };
 
-jswiki.pageserver = function(da) {
-	this.getPage = function(options) {
+// Each parser must have a toHTML(text) method
+jswiki.parsers = {};
+jswiki.parsers.markdown = function() {
+	this.toHTML = function(text) {
+		return markdown.toHTML(text);
+	};
+};
+jswiki.parsers.text = jswiki.parsers.markdown;
+
+jswiki.browser = function(da, parserMap) {
+	// Supply default parsers
+	parserMap = parserMap || {
+		"md": new jswiki.parsers.markdown,
+		"txt": new jswiki.parsers.text
+	};
+
+	// Navigate to url, or return false if can't
+	this.navigate = function(url) {
+		var parser = this.getParser(url);
+		if (!parser) return false;
+		
+		// Normalise path to ensure only one url identifies a page
+		var path = jswiki.pathHelper.normalise(url);
+		
+		// Update browser url
+		router.navigate(path);
+		
+		// Display page
+		var me = this;
 		da.retrieveMarkdown({
-			path: options.path,
+			path: path,
 			success: function(result) {
-				var html = markdown.toHTML(result.text);
-				// NB. Fix paths to come from root of site
-				html = jswiki.pathHelper.rootRelativePaths(options.path || "", html);
-				options.response({
+				me.handleResponse({
 					path: result.path,
 					status: result.status,
-					html: html
+					html: parser.toHTML(result.text)
 				});
 			},
 			error: function(result) {
-				var md = _.template("# Error\n\nStatus: {{status}}\n\nDetails: {{error}}", result);
-				var html = markdown.toHTML(md);
-				options.response({
+				me.handleResponse({
 					path: result.path,
 					status: result.status,
-					html: html
+					html: _.template("<h1>Error</h1><p>Status: {{status}}</p><p>Details: {{error}}</p>", result)
 				});
 			}
 		});
+		
+		return true;
 	};
-};
-
-jswiki.browser = function(server) {
-	this.navigate = function(path) {
-		// Normalise path to ensure only one url identifies a page
-		path = jswiki.pathHelper.normalise(path);
+	
+	this.handleResponse = function(response) {
+		// NB. Update paths (in place) to come from root of site
+		response.html = jswiki.pathHelper.rootRelativePaths(response.path || "", response.html);
+		this.trigger("pageReady", response);
+	};
+	
+	this.getParser = function(url) {
+		// Ignore "protocol:..." urls
+		if (/^[a-z]+:/.test(url)) return null;
+		// Ignore "//domain/path/..." urls
+		if (/^\/\//.test(url)) return null;
 		
-		// Update state
-		router.navigate(path);
-		
-		// Initiate page fetch
-		var me = this;
-		server.getPage({
-			path: path,
-			response: function(response) {
-				me.trigger("pageReady", response);
-			}
-		});
-	} ;
+		var extensionMatch = /\.([a-z0-9]+)$/.exec(url);
+		var extension = extensionMatch ? extensionMatch[1] : "";
+		return parserMap[extension];
+	};
 	
 	var router = new Backbone.Router();
-	router.route("*path", "changePath", _.bind(this.navigate, this));
+	router.route("*path", "changePath", _.bind(this.navigate, this));	
 };
 _.extend(jswiki.browser.prototype, Backbone.Events);
 
@@ -111,18 +133,11 @@ jswiki.pagePanel = function(el, browser) {
 		var anchor = event.target;
 		var url = $(anchor).attr("href");
 
-		// Ignore "protocol:..." urls
-		if (/^[a-z]+:/.test(url)) return true;
-		// Ignore "//domain/path/..." urls
-		if (/^\/\//.test(url)) return true;
-		// Ignore unmapped file extensions
-		var extensionMatch = /\.([a-z0-9]+)$/.exec(url);
-		var extension = extensionMatch ? extensionMatch[1] : "";
-		if (extension != "md" && extension != "txt") return true;
-		
-		// OK, capture the click and pass to browser
+		// If we fail to navigate to the url, allow default behaviour
+		if (!browser.navigate(url)) return true;
+
+		// We've handled this click so cancel default behaviour
 		event.preventDefault();
-		browser.navigate(url);
 		return false;
 	};
 };
