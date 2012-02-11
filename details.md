@@ -12,7 +12,9 @@
 There is no configuration file, just the single html file.  So if you want to override any of the defaults, you just pass different
 options when you create the js-wiki browser object:
 
-	var browser = new jswiki.browser(da, { "mrkdwn": new jswiki.parser.markdown });
+	var browser = new jswiki.browser(da, {
+		"mrkdwn": new jswiki.parser.markdown
+	});
 
 ## Design
 

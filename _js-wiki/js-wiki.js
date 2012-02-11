@@ -26,8 +26,9 @@ jswiki.da = function() {
 // Each parser must have a toHTML(text) method
 jswiki.parsers = {};
 jswiki.parsers.markdown = function() {
+    var sd = new Showdown.converter();
 	this.toHTML = function(text) {
-		return markdown.toHTML(text);
+		return sd.makeHtml(text);
 	};
 };
 jswiki.parsers.text = jswiki.parsers.markdown;

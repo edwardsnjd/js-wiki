@@ -23,7 +23,7 @@ For developers or anyone comfortable with web servers and version control system
 - You can search your wiki content locally as you would other files
 - The barrier to writing a new page is very low; it's just a plain text file
 
-Working with the wiki as files locally is great but it's nice to view it in a browser.  There are some great options for
+Working with the wiki as files locally is great but it's nice to view it in a browser.  there are some great options for
 this already (e.g. [Markdoc][mdoc]) but they tend to require packages installed on the server.  js-wiki aims to be even simpler
 by rendering the markdown to html on the client.
 
@@ -41,7 +41,7 @@ for making projects like this so fun:
 - [Underscore][lib.us]
 - [Backbone][lib.bb]
 - [JQuery][lib.jq]
-- [markdown-js][lib.md]
+- [Showdown][lib.sd]
 
 [details]: details.md
 [md]: http://daringfireball.net/projects/markdown/
@@ -49,5 +49,5 @@ for making projects like this so fun:
 [lib.us]: http://documentcloud.github.com/underscore/
 [lib.bb]: http://documentcloud.github.com/backbone/
 [lib.jq]: http://jquery.com/
-[lib.md]: https://github.com/evilstreak/markdown-js
+[lib.sd]: http://www.showdown.im/
 [bright]: http://www.brighttechnologies.com.au/
