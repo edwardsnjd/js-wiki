@@ -1,4 +1,6 @@
-﻿<html>
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+	"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
 
 <head>
 	<title>js-wiki</title>
@@ -13,14 +15,13 @@
 	<script type="text/javascript">
 	$(function() {
 		var da = new jswiki.da();
-		var browser = new jswiki.browser(da);
+		var browser = new jswiki.browser(da, {
+			defaultPage: "README.md"
+		});
 		var pagePanel = new jswiki.pagePanel("#content", browser);
 		var pathPanel = new jswiki.pathPanel("#path", browser);
-		
-		// Load default page if not already specified on url
-		if (!window.location.hash) {
-			window.location = "#README.md";
-		}
+		var titlePanel = new jswiki.titleControl(browser);
+		var pagePanel = new jswiki.tocPanel("#toc", browser);
 		
 		// Start backbone watching urls and triggering navigation events
 	    Backbone.history.start();
@@ -30,6 +31,7 @@
 
 <body>
 	<div id="content"></div>
+	<div id="toc"></div>
 	<div id="path"></div>
 </body>
 

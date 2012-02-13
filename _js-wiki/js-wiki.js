@@ -5,6 +5,7 @@ jswiki.da = function() {
 		$.ajax({
 			url: options.path,
 			dataType: "text",
+			cache: false,
 			success: function(data, status, xhr) {
 				options.success({
 					path: options.path,
@@ -33,15 +34,20 @@ jswiki.parsers.markdown = function() {
 };
 jswiki.parsers.text = jswiki.parsers.markdown;
 
-jswiki.browser = function(da, parserMap) {
-	// Supply default parsers
-	parserMap = parserMap || {
+jswiki.browser = function(da, options) {
+	// Supply default options
+	var opts = options || {};
+	opts.parserMap = opts.parserMap || {
 		"md": new jswiki.parsers.markdown,
 		"txt": new jswiki.parsers.text
 	};
+	opts.defaultPage = opts.defaultPage || "index.md";
 
 	// Navigate to url, or return false if can't
 	this.navigate = function(url) {
+		// Supply default page if not supplied
+		url = url || opts.defaultPage;
+
 		var parser = this.getParser(url);
 		if (!parser) return false;
 		
@@ -88,7 +94,7 @@ jswiki.browser = function(da, parserMap) {
 		
 		var extensionMatch = /\.([a-z0-9]+)$/.exec(url);
 		var extension = extensionMatch ? extensionMatch[1] : "";
-		return parserMap[extension];
+		return opts.parserMap[extension];
 	};
 	
 	var router = new Backbone.Router();
@@ -115,7 +121,7 @@ jswiki.pathHelper = {
 			path = path.replace(leadingParentRegex, "");
 		}
 		// Remove pointless pairs
-		var pointlessPairRegex = /[a-z0-9]+\/\.\.\//i;
+		var pointlessPairRegex = /[^\/]+\/\.\.\//i;
 		while (pointlessPairRegex.test(path)) {
 			path = path.replace(pointlessPairRegex, "");
 		}
@@ -128,12 +134,14 @@ jswiki.pagePanel = function(el, browser) {
 		// Render page and intercept links
 		$(el).html(page.html)
 			.find("a").click(onClick);
+
+		this.trigger("pageRendered", el);
 	});
-	
+
 	var onClick = function(event) {
 		var anchor = event.target;
-		var url = $(anchor).attr("href");
-
+		var url = $(anchor).attr("href"); 
+ 
 		// If we fail to navigate to the url, allow default behaviour
 		if (!browser.navigate(url)) return true;
 
@@ -142,10 +150,60 @@ jswiki.pagePanel = function(el, browser) {
 		return false;
 	};
 };
+_.extend(jswiki.pagePanel.prototype, Backbone.Events)
 
 jswiki.pathPanel = function(el, browser) {
 	browser.on("pageReady", function(page) {
 		// Render link to orig file
-		$(el).html(_.template("You are seeing a js-wiki view of <a href='<%= path %>'><%= path %></a>.", page));
+		$(el).html(_.template("You are seeing a js-wiki view of <a href='<%= path %>' title='Click to see original file'><%= path %></a> | <a href='#'>Go home</a>", page));
 	});
+};
+
+jswiki.titleControl = function(pagePanel) {
+	pagePanel.on("pageRendered", function(pageEl) {
+		// Set window title
+		window.document.title = $(pageEl).find("h1").first().text() || "js-wiki";
+	});
+};
+
+jswiki.tocPanel = function(el, pagePanel) {
+	pagePanel.on("pageRendered", function(pageEl) {
+		// Populate TOC
+		var headings = [];
+		$(pageEl).find(":header").each(function(){
+			headings.push({
+				id: this.id,
+				tag: this.tagName.toLowerCase(),
+				text: $(this).text()
+			});
+		});
+		if (headings) {
+			var headingsMarkup = _.map(headings, function(h) {
+				return _.template(
+					"<li class='toc_<%=tag%>'><a href='#<%=id%>'><%=text%></a></li>",
+					h
+				);
+			});
+			$(el).html("<ul>" + headingsMarkup.join("") + "</ul>");
+		} else {
+			$(el).html();
+		}
+		$(el).find("a").click(onClick);
+	});
+
+	var onClick = function(event) {
+		// Scroll to heading
+		var anchor = event.target;
+		var url = $(anchor).attr("href"); 
+		var id = findHash(url);
+		$("html, body").animate({scrollTop: $("#" + id).offset().top});
+
+		// We've handled this click so cancel default behaviour
+		event.preventDefault();
+		return false;
+	};
+
+	var findHash = function(url) {
+		return url.replace(/^[^#]*#([^#]*)$/, "$1");
+	};
 };

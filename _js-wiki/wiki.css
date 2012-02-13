@@ -1,7 +1,6 @@
 body {
-	width: 80%;
-	max-width: 1000px;
-	margin: 1em auto 3em auto;
+	max-width: 900px;
+	margin: 1em auto 3em 13em;
 	background-color: #FAFAD2;
 	font-family: "Arial", sans-serif;
 	font-size: .9em;
@@ -68,3 +67,22 @@ li { margin: .2em auto; }
 	opacity: 1;
 	border-top-style: solid;
 }
+
+#toc {
+	position: fixed;
+	top: 0;
+	left: 0;
+	bottom: 0;
+	padding: .5em;
+	width: 11em;
+	border-right: 1px dotted #ccc;
+}
+#toc ul { padding: 0; margin: 0; font-size: 0.8em;}
+#toc li { display: block; }
+#toc li:hover { background-color: #ffd; }
+#toc li.toc_h1 { margin-left: 0.0em; font-size: 1.2em; }
+#toc li.toc_h2 { margin-left: 0.3em; font-size: 1.0em; }
+#toc li.toc_h3 { margin-left: 0.6em; font-size: 0.8em; }
+#toc li.toc_h4 { margin-left: 0.9em; font-size: 0.8em; }
+#toc li.toc_h5 { margin-left: 1.2em; font-size: 0.8em; }
+#toc li.toc_h6 { margin-left: 1.5em; font-size: 0.8em; }
