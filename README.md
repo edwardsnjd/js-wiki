@@ -13,7 +13,7 @@ some more technical details.
 - Hash fragment history to allow normal browser navigation
 - Simple to extend or customise
 
-## Who should use js-wiki
+## Who should use js-wiki?
 
 For developers or anyone comfortable with web servers and version control systems, writing a wiki in [markdown][md] is great:
 
@@ -33,7 +33,7 @@ into it.
 
 ## Credits
 
-js-wiki is a toy project that came out of idle chat about what we want from a dev wiki at [Bright][bright]; sorry if this isn't as good as you imagined it would be Tim!
+js-wiki is a toy project that came out of idle chat about what we want from a dev wiki at [Bright][bright].
 
 js-wiki is built on a number of fantastic javascript libraries, thank you to everyone who contributes to these
 for making projects like this so fun:
