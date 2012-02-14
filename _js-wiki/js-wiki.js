@@ -207,3 +207,10 @@ jswiki.tocPanel = function(el, pagePanel) {
 		return url.replace(/^[^#]*#([^#]*)$/, "$1");
 	};
 };
+
+jswiki.codePrettifier = function(pagePanel) {
+	pagePanel.on("pageRendered", function(pageEl) {
+		$(pageEl).find("pre").addClass("prettyprint");
+		prettyPrint();
+	});
+};

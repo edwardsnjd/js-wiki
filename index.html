@@ -4,11 +4,14 @@
 
 <head>
 	<title>js-wiki</title>
+
 	<script type="text/javascript" src="_js-wiki/jquery-1.7.1.min.js"></script>
 	<script type="text/javascript" src="_js-wiki/underscore-min.js"></script>
 	<script type="text/javascript" src="_js-wiki/backbone-min.js"></script>
 	<script type="text/javascript" src="_js-wiki/showdown.js"></script>
 	<script type="text/javascript" src="_js-wiki/js-wiki.js"></script>
+	<script type="text/javascript" src="_js-wiki/google-code-prettify/prettify.js"></script>
+	<link rel="stylesheet" type="text/css" href="_js-wiki/google-code-prettify/desert.css" />
 	<link rel="stylesheet" type="text/css" href="_js-wiki/eric-meyer-reset.css" />
 	<link rel="stylesheet" type="text/css" href="_js-wiki/wiki.css" />
 
@@ -21,7 +24,8 @@
 		var pagePanel = new jswiki.pagePanel("#content", browser);
 		var pathPanel = new jswiki.pathPanel("#path", browser);
 		var titlePanel = new jswiki.titleControl(browser);
-		var pagePanel = new jswiki.tocPanel("#toc", browser);
+		var pagePanel = new jswiki.tocPanel("#tocTable", browser);
+		var codePrettifier = new jswiki.codePrettifier(browser);
 		
 		// Start backbone watching urls and triggering navigation events
 	    Backbone.history.start();
@@ -30,7 +34,10 @@
 </head>
 
 <body>
-	<div id="content"></div>
+	<div id="toc">
+		<p>Table of Contents</p>
+		<div id="tocTable"></div>
+	</div>
 	<div id="toc"></div>
 	<div id="path"></div>
 </body>
